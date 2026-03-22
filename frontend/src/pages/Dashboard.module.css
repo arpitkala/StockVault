@@ -1,0 +1,180 @@
+.greeting     { margin-bottom:22px; }
+.greetTitle   { font-size:22px; font-weight:800; letter-spacing:-.4px; margin-bottom:4px; }
+.greetSub     { font-size:13px; color:var(--text-3); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+
+/* Top row with greeting + search */
+.topRow {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:16px; margin-bottom:22px; flex-wrap:wrap;
+}
+
+/* Search */
+.searchWrap   { position:relative; flex:1; max-width:420px; min-width:240px; }
+.searchBox {
+  display:flex; align-items:center; gap:9px;
+  background:var(--surface-0); border:1.5px solid var(--line);
+  border-radius:var(--radius-md); padding:10px 14px;
+  transition:all 0.15s;
+}
+.searchBox:focus-within { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-dim2); }
+.searchOpen { border-color:var(--brand); border-bottom-left-radius:0; border-bottom-right-radius:0; border-bottom-color:transparent; }
+.searchInput {
+  flex:1; background:transparent; border:none;
+  font-size:13px; color:var(--text-1); font-family:var(--font);
+  min-width:0;
+}
+.searchInput::placeholder { color:var(--text-4); }
+.searchInput:focus { outline:none; }
+.clearBtn {
+  background:none; border:none; cursor:pointer;
+  color:var(--text-3); font-size:12px; padding:0 2px; line-height:1;
+}
+.searchSpinner {
+  width:14px; height:14px; flex-shrink:0;
+  border:2px solid var(--line); border-top:2px solid var(--brand);
+  border-radius:50%; animation:spin .7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.searchDropdown {
+  position:absolute; top:100%; left:0; right:0;
+  background:var(--surface-0); border:1.5px solid var(--brand);
+  border-top:none; border-bottom-left-radius:var(--radius-md);
+  border-bottom-right-radius:var(--radius-md);
+  box-shadow:var(--shadow-lg); z-index:100; overflow:hidden;
+}
+.searchResult {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; cursor:pointer; transition:background .1s;
+  border-bottom:1px solid var(--line);
+}
+.searchResult:last-of-type { border-bottom:none; }
+.searchResult:hover { background:var(--surface-1); }
+.resIcon {
+  width:34px; height:34px; border-radius:9px;
+  background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:800; color:var(--text-2); flex-shrink:0;
+}
+.resSym   { font-size:13px; font-weight:700; }
+.resName  { font-size:11px; color:var(--text-3); margin-top:1px; }
+.resPrice { font-size:13px; font-weight:700; font-family:var(--mono); margin-bottom:2px; }
+.resArrow { font-size:14px; color:var(--text-4); flex-shrink:0; margin-left:4px; }
+.searchFooter {
+  padding:10px 14px; font-size:12px; font-weight:600;
+  color:var(--brand); cursor:pointer; text-align:center;
+  background:var(--surface-1); transition:background .1s;
+}
+.searchFooter:hover { background:var(--brand-dim2); }
+.noResults {
+  padding:16px 14px; font-size:13px; color:var(--text-3); text-align:center;
+}
+
+/* Summary */
+.summaryGrid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:12px; margin-bottom:14px;
+}
+.sumCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:16px 18px;
+  transition:box-shadow 0.15s;
+}
+.sumCard:hover { box-shadow:var(--shadow-sm); }
+.balanceCard  { border-left:3px solid var(--brand); }
+.plUp         { border-left:3px solid var(--up); }
+.plDn         { border-left:3px solid var(--dn); }
+.sumLabel { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:7px; }
+.sumValue { font-size:20px; font-weight:800; font-family:var(--mono); letter-spacing:-.5px; margin-bottom:4px; }
+.sumSub   { font-size:12px; color:var(--text-3); }
+
+/* Indices */
+.indicesRow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; overflow-x:auto; padding-bottom:4px; }
+.idxChip {
+  display:flex; align-items:center; gap:7px;
+  padding:7px 13px; background:var(--surface-0);
+  border:1px solid var(--line); border-radius:var(--radius-md);
+  cursor:pointer; transition:all 0.15s; white-space:nowrap; flex-shrink:0;
+}
+.idxChip:hover { border-color:var(--brand); background:var(--brand-dim2); }
+.idxName { font-size:10px; font-weight:800; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
+.idxVal  { font-size:13px; font-weight:800; }
+.idxChg  { font-size:11px; font-weight:700; }
+
+/* Main grid */
+.mainGrid { display:grid; grid-template-columns:1fr 280px; gap:14px; margin-bottom:14px; }
+
+.moversCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:18px;
+}
+.cardHead  { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.cardTitle { font-size:15px; font-weight:700; }
+.viewAll   { font-size:12px; font-weight:600; color:var(--brand); background:none; cursor:pointer; }
+.moversGrid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.moversLabel { font-size:12px; font-weight:700; color:var(--text-3); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+
+.quickCard { background:var(--surface-0); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px; }
+.quickGrid { display:flex; flex-direction:column; gap:4px; }
+.quickItem { display:flex; align-items:center; gap:12px; padding:9px 11px; border-radius:var(--radius-sm); cursor:pointer; transition:background 0.12s; }
+.quickItem:hover { background:var(--surface-2); }
+.quickIcon  { font-size:18px; flex-shrink:0; }
+.quickLabel { font-size:13px; font-weight:600; }
+.quickSub   { font-size:11px; color:var(--text-3); margin-top:1px; }
+
+/* Holdings */
+.holdingsCard { background:var(--surface-0); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px; }
+.holdingsList { display:flex; flex-direction:column; }
+.holdingRow {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 0; border-bottom:1px solid var(--line);
+  cursor:pointer; transition:all 0.1s;
+}
+.holdingRow:last-child { border-bottom:none; }
+.holdingRow:hover { background:var(--surface-1); margin:0 -6px; padding-left:6px; padding-right:6px; border-radius:var(--radius-sm); }
+.holdingL     { display:flex; align-items:center; gap:10px; min-width:0; }
+.holdingIcon  { width:36px; height:36px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:var(--text-2); flex-shrink:0; }
+.holdingSym   { font-size:13px; font-weight:700; }
+.holdingMeta  { font-size:11px; color:var(--text-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.holdingR     { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+.holdingPL    { font-size:14px; font-weight:800; font-family:var(--mono); }
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media (max-width:1100px) {
+  .summaryGrid { grid-template-columns:repeat(2,1fr); }
+  .mainGrid    { grid-template-columns:1fr; }
+}
+
+@media (max-width:900px) {
+  .mainGrid    { grid-template-columns:1fr; }
+  .moversGrid  { grid-template-columns:1fr 1fr; }
+  .topRow      { flex-direction:column; gap:12px; }
+  .searchWrap  { max-width:100%; width:100%; min-width:unset; }
+  .greetTitle  { font-size:18px; }
+  .sumValue    { font-size:17px; }
+  .quickGrid   { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .quickItem   { padding:8px 10px; }
+}
+
+@media (max-width:600px) {
+  .summaryGrid { grid-template-columns:1fr 1fr; gap:8px; }
+  .sumCard     { padding:12px 14px; }
+  .sumValue    { font-size:15px; }
+  .sumLabel    { font-size:10px; }
+  .moversGrid  { grid-template-columns:1fr; gap:16px; }
+  .mainGrid    { gap:10px; }
+  .moversCard,
+  .quickCard,
+  .holdingsCard { padding:14px; }
+  .cardTitle   { font-size:14px; }
+  .indicesRow  { gap:6px; }
+  .idxChip     { padding:5px 10px; }
+  .idxVal      { font-size:12px; }
+  .quickGrid   { grid-template-columns:1fr 1fr; }
+}
+
+@media (max-width:380px) {
+  .summaryGrid { grid-template-columns:1fr; }
+  .quickGrid   { grid-template-columns:1fr; }
+  .greetTitle  { font-size:16px; }
+}
