@@ -37,7 +37,12 @@ app.set('broadcastPrices', broadcast);
 
 connectDB();
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
+app.use(
+  cors({ 
+    origin:"https://stockvault01.netlify.app",
+     credentials: true 
+     })
+     );
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 500 }));
