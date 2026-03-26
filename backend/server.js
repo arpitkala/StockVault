@@ -37,14 +37,24 @@ app.set('broadcastPrices', broadcast);
 
 connectDB();
 
-app.use(
-  cors({ 
-    origin:["https://stockvault01.netlify.app",
-    "http://localhost:3000"
-    ],
-     credentials: true 
-     })
-     );
+const allowedOrigins = [
+  "http://localhost:5173",   // ✅ Vite
+  "http://localhost:3000",   // ✅ React (optional)
+  "https://stockvault01.netlify.app" // ✅ deployed frontend
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
+app.options("*", cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 500 }));
