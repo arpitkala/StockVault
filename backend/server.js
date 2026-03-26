@@ -39,7 +39,9 @@ connectDB();
 
 app.use(
   cors({ 
-    origin:"https://stockvault01.netlify.app",
+    origin:["https://stockvault01.netlify.app",
+    "http://localhost:3000"
+    ],
      credentials: true 
      })
      );
