@@ -1,0 +1,115 @@
+.pageHead { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+.title { font-size:22px; font-weight:800; letter-spacing:-0.3px; }
+.sub   { font-size:13px; color:var(--text-3); margin-top:3px; }
+
+.tabs { display:flex; gap:6px; margin-bottom:20px; padding-bottom:2px; border-bottom:1px solid var(--line); }
+.tab  {
+  padding:8px 18px; border-radius:var(--radius-sm);
+  font-size:13px; font-weight:600;
+  color:var(--text-2); background:none;
+  border-bottom:2px solid transparent;
+  transition:all 0.15s; cursor:pointer; margin-bottom:-1px;
+}
+.tab:hover { color:var(--text-1); }
+.tabActive  { color:var(--brand) !important; border-bottom-color:var(--brand); background:none; }
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+  gap:16px;
+  margin-bottom:32px;
+}
+
+.ipoCard {
+  background:var(--surface-0);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:18px;
+  transition:box-shadow 0.2s, transform 0.2s;
+}
+.ipoCard:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+.cardTop { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+
+.statusBadge {
+  font-size:11px; font-weight:700; padding:3px 9px;
+  border-radius:var(--radius-pill); text-transform:uppercase; letter-spacing:0.5px;
+}
+.badgeOpen     { background:rgba(0,179,134,0.12); color:var(--up); }
+.badgeUpcoming { background:rgba(243,156,18,0.12); color:var(--warn); }
+.badgeListed   { background:var(--surface-2); color:var(--text-2); }
+
+.companyRow { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.companyIcon {
+  width:40px; height:40px; border-radius:10px;
+  background:var(--surface-2); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; color:var(--text-2); flex-shrink:0;
+}
+.companyName { font-size:14px; font-weight:700; }
+.sector      { font-size:11px; color:var(--text-3); margin-top:2px; }
+
+.dataGrid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px 16px;
+  background:var(--surface-1);
+  border-radius:var(--radius-md);
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+.dataItem  { display:flex; flex-direction:column; gap:2px; }
+.dataLabel { font-size:10px; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:0.4px; }
+.dataVal   { font-size:13px; font-weight:700; font-family:var(--mono); color:var(--text-1); }
+
+.datesRow {
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; color:var(--text-3); margin-bottom:14px;
+}
+
+.applyBtn {
+  width:100%; padding:11px;
+  background:var(--brand); color:#fff;
+  border-radius:var(--radius-sm); font-size:14px; font-weight:700;
+  cursor:pointer; transition:all 0.15s;
+  font-family:var(--font);
+}
+.applyBtn:hover { background:var(--brand-2); }
+
+.notifyBtn {
+  width:100%; padding:10px;
+  background:var(--warn-bg); color:var(--warn);
+  border:1px solid rgba(243,156,18,0.3);
+  border-radius:var(--radius-sm); font-size:13px; font-weight:700;
+  cursor:pointer; font-family:var(--font);
+}
+
+.viewBtn {
+  width:100%; padding:10px;
+  background:var(--surface-2); color:var(--text-1);
+  border:1px solid var(--line);
+  border-radius:var(--radius-sm); font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--font);
+}
+.viewBtn:hover { background:var(--surface-3); }
+
+.empty { text-align:center; padding:60px; color:var(--text-3); display:flex; flex-direction:column; align-items:center; gap:10px; }
+
+.infoBox {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:24px;
+}
+.infoBox h3 { font-size:16px; font-weight:700; margin-bottom:20px; }
+.stepsRow   { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.step       { display:flex; flex-direction:column; gap:6px; }
+.stepNum {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--brand-dim); color:var(--brand);
+  font-size:13px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:4px;
+}
+.stepTitle { font-size:13px; font-weight:700; }
+.stepDesc  { font-size:12px; color:var(--text-3); line-height:1.5; }
+
+@media (max-width:768px) { .stepsRow { grid-template-columns:1fr 1fr; } }
+@media (max-width:480px) { .stepsRow { grid-template-columns:1fr; } }

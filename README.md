@@ -28,6 +28,9 @@ and practicing Indian stock market trading without any real money risk.
 
 ## 👨‍💻 Built by
 **Arpit Kala** · [LinkedIn](https://www.linkedin.com/in/arpit-kala-8a9a66375)
+<<<<<<< HEAD
 
 ## Deployedment Link 
       stockvault01.netlify.app
+=======
+>>>>>>> d6be6aeb8789c56ad1b124787a4e0256f243c64a

@@ -1,0 +1,105 @@
+.pageHead { margin-bottom:20px; }
+.title    { font-size:22px; font-weight:800; letter-spacing:-.3px; }
+.sub      { font-size:13px; color:var(--text-3); margin-top:3px; }
+
+.filtersBar {
+  display:flex; gap:10px; align-items:center; margin-bottom:12px;
+}
+.searchWrap {
+  display:flex; align-items:center; gap:8px; flex:1;
+  background:var(--surface-0); border:1.5px solid var(--line);
+  border-radius:var(--radius-sm); padding:9px 14px;
+  transition:border-color 0.15s;
+}
+.searchWrap:focus-within { border-color:var(--brand); }
+.searchInput {
+  flex:1; background:transparent; border:none;
+  font-size:13px; color:var(--text-1); font-family:var(--font);
+}
+.searchInput::placeholder { color:var(--text-4); }
+.searchInput:focus { outline:none; }
+.clearSearch {
+  background:none; border:none; cursor:pointer;
+  color:var(--text-3); font-size:12px; padding:0 2px;
+}
+.sortSelect {
+  padding:9px 12px; background:var(--surface-0);
+  border:1.5px solid var(--line); border-radius:var(--radius-sm);
+  font-size:12px; font-weight:600; color:var(--text-2);
+  cursor:pointer; font-family:var(--font);
+}
+
+.sectorRow {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;
+}
+.sChip {
+  padding:5px 13px; border-radius:var(--radius-pill);
+  font-size:12px; font-weight:600;
+  background:var(--surface-0); border:1px solid var(--line);
+  color:var(--text-2); cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.sChip:hover { background:var(--surface-2); color:var(--text-1); }
+.sChipActive { background:var(--brand-dim) !important; color:var(--brand) !important; border-color:rgba(0,208,156,.4) !important; }
+
+.tableCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); overflow:hidden;
+}
+
+.tableHead {
+  display:grid;
+  grid-template-columns:1fr 100px 90px 70px 70px 80px 50px 90px;
+  padding:10px 16px;
+  font-size:10px; font-weight:700; color:var(--text-3);
+  text-transform:uppercase; letter-spacing:.5px;
+  background:var(--surface-1); border-bottom:1px solid var(--line);
+}
+
+.tableRow {
+  display:grid;
+  grid-template-columns:1fr 100px 90px 70px 70px 80px 50px 90px;
+  padding:12px 16px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  cursor:pointer; transition:background 0.1s;
+}
+.tableRow:last-child { border-bottom:none; }
+.tableRow:hover { background:var(--surface-1); }
+
+.stockCell { display:flex; align-items:center; gap:10px; }
+.stockIcon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:800; color:var(--text-2); flex-shrink:0;
+}
+.stockSym  { font-size:13px; font-weight:700; }
+.stockName { font-size:11px; color:var(--text-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; }
+
+.price       { font-size:14px; font-weight:700; }
+.changeBadge { display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:700; }
+.vol         { font-size:12px; color:var(--text-2); font-family:var(--mono); }
+.mcap        { font-size:12px; color:var(--text-2); font-family:var(--mono); }
+.pe          { font-size:12px; color:var(--text-2); font-family:var(--mono); }
+.sectorBadge { display:inline-block; padding:3px 9px; border-radius:99px; font-size:10px; font-weight:700; background:var(--surface-2); color:var(--text-2); white-space:nowrap; }
+
+.empty {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:60px; gap:10px; color:var(--text-3);
+}
+.empty span { font-size:36px; }
+.empty p    { font-size:14px; }
+
+.hideSM {}
+.hideMD {}
+
+@media (max-width:1000px) {
+  .tableHead { grid-template-columns:1fr 90px 80px 60px 60px 70px; }
+  .tableRow  { grid-template-columns:1fr 90px 80px 60px 60px 70px; }
+  .hideMD    { display:none; }
+}
+@media (max-width:700px) {
+  .tableHead { grid-template-columns:1fr 85px 75px; }
+  .tableRow  { grid-template-columns:1fr 85px 75px; }
+  .hideSM    { display:none; }
+}

@@ -67,7 +67,7 @@ export const WSProvider = ({ children }) => {
 
   const connect = useCallback(() => {
     if (!token) return;
-    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:5000';
+    const wsUrl = process.env.REACT_APP_WS_URL || 'ws:////stockvault-glve.onrender.com';
 
     try {
       wsRef.current = new WebSocket(wsUrl);
