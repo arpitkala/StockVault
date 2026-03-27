@@ -59,7 +59,7 @@ app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 500 }));
-
+console.log("CORS allowed origins:", allowedOrigins);
 app.use('/api/auth',      authRoutes);
 app.use('/api/stocks',    stockRoutes);
 app.use('/api/orders',    orderRoutes);
