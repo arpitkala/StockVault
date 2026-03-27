@@ -1,0 +1,91 @@
+.pageHead { margin-bottom:20px; }
+.title    { font-size:22px; font-weight:800; letter-spacing:-.3px; }
+.sub      { font-size:13px; color:var(--text-3); margin-top:3px; }
+
+.addCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:16px 18px;
+  margin-bottom:18px; position:relative;
+}
+.searchLabel { font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:9px; }
+.searchBox {
+  display:flex; align-items:center; gap:9px;
+  background:var(--surface-1); border:1.5px solid var(--line);
+  border-radius:var(--radius-sm); padding:9px 14px;
+  transition:border-color .15s;
+}
+.searchBox:focus-within { border-color:var(--brand); }
+.searchInput {
+  flex:1; background:transparent; border:none;
+  font-size:13px; color:var(--text-1); font-family:var(--font);
+}
+.searchInput:focus { outline:none; }
+.searchInput::placeholder { color:var(--text-4); }
+
+.searchDropdown {
+  position:absolute; left:18px; right:18px; top:calc(100% - 4px);
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-md); box-shadow:var(--shadow-lg);
+  overflow:hidden; z-index:20;
+}
+.searchResult {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 16px; cursor:pointer; transition:background .1s;
+  border-bottom:1px solid var(--line);
+}
+.searchResult:last-child { border-bottom:none; }
+.searchResult:hover { background:var(--surface-1); }
+.resIcon {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--surface-2); display:flex; align-items:center;
+  justify-content:center; font-size:10px; font-weight:800; color:var(--text-2); flex-shrink:0;
+}
+.addBtn {
+  padding:5px 11px; background:var(--brand-dim); color:var(--brand);
+  border-radius:var(--radius-sm); font-size:12px; font-weight:700;
+  cursor:pointer; font-family:var(--font); white-space:nowrap;
+}
+
+/* Grid */
+.grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+  gap:14px;
+}
+.stockCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:16px;
+  cursor:pointer; transition:all .18s;
+}
+.stockCard:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+.cardTop  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.cardLeft { display:flex; align-items:center; gap:10px; }
+.cardIcon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--surface-2); display:flex; align-items:center;
+  justify-content:center; font-size:11px; font-weight:800; color:var(--text-2); flex-shrink:0;
+}
+.sym      { font-size:14px; font-weight:800; }
+.sect     { font-size:11px; color:var(--text-3); margin-top:2px; }
+
+.removeBtn {
+  width:24px; height:24px; border-radius:6px;
+  background:transparent; color:var(--text-4); font-size:11px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .12s;
+}
+.removeBtn:hover { background:var(--dn-bg); color:var(--dn); }
+
+.priceRow { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+.price    { font-size:20px; font-weight:800; letter-spacing:-.5px; }
+.chgBadge { display:inline-flex; align-items:center; gap:3px; padding:4px 9px; border-radius:99px; font-size:11px; font-weight:700; }
+
+.cardFoot { display:flex; justify-content:space-between; align-items:center; }
+
+.empty {
+  display:flex; flex-direction:column; align-items:center; padding:60px;
+  gap:10px; color:var(--text-3); text-align:center;
+}
+.empty span { font-size:40px; }
+.empty h3   { font-size:17px; font-weight:700; color:var(--text-2); }
+.empty p    { font-size:13px; }

@@ -1,0 +1,107 @@
+.page {
+  min-height:100vh; display:flex;
+  background:var(--surface-1);
+}
+
+.leftPanel {
+  flex:1; background:linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+  display:flex; flex-direction:column; justify-content:center;
+  padding:60px; position:relative; overflow:hidden;
+}
+.leftContent { position:relative; z-index:1; color:#fff; }
+
+.logo {
+  display:flex; align-items:center; gap:10px; margin-bottom:48px;
+}
+.logoIcon {
+  width:36px; height:36px; background:rgba(255,255,255,.2);
+  border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:14px;
+}
+
+.headline {
+  font-size:40px; font-weight:800; color:#fff;
+  line-height:1.15; letter-spacing:-1px; margin-bottom:16px;
+}
+.subheadline {
+  font-size:15px; color:rgba(255,255,255,.75);
+  max-width:380px; line-height:1.6; margin-bottom:40px;
+}
+.stats   { display:flex; gap:32px; }
+.stat    { display:flex; flex-direction:column; gap:2px; }
+.stat strong { font-size:20px; font-weight:800; color:#fff; }
+.stat span   { font-size:11px; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.5px; }
+
+.chartBg {
+  position:absolute; bottom:-40px; right:-40px; opacity:.08; pointer-events:none;
+}
+
+.rightPanel {
+  width:480px; display:flex; align-items:center; justify-content:center;
+  padding:48px; background:var(--surface-0);
+}
+.formCard { width:100%; max-width:380px; }
+.formTitle    { font-size:22px; font-weight:800; letter-spacing:-.3px; margin-bottom:5px; }
+.formSubtitle { font-size:13px; color:var(--text-3); margin-bottom:24px; }
+
+.errorBox {
+  background:var(--dn-bg); border:1px solid rgba(240,84,84,.3);
+  border-radius:var(--radius-sm); padding:11px 14px;
+  font-size:13px; color:var(--dn); margin-bottom:16px;
+}
+.form       { display:flex; flex-direction:column; gap:14px; }
+.field      { display:flex; flex-direction:column; gap:5px; }
+.field label { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+.inputWrap {
+  display:flex; align-items:center; gap:0;
+  border:1.5px solid var(--line); border-radius:var(--radius-sm);
+  overflow:hidden; background:var(--surface-1);
+  transition:border-color .15s;
+}
+.inputWrap:focus-within { border-color:var(--brand); background:var(--surface-0); }
+.inputIcon { margin-left:12px; color:var(--text-3); flex-shrink:0; }
+.inputWrap input {
+  flex:1; padding:10px 12px; background:transparent; border:none;
+  font-size:14px; color:var(--text-1); font-family:var(--font);
+}
+.inputWrap input:focus { outline:none; }
+.eyeBtn {
+  padding:0 12px; background:none; cursor:pointer; color:var(--text-3);
+  display:flex; align-items:center;
+}
+
+.submitBtn {
+  padding:12px; background:var(--brand); color:#fff; border:none;
+  border-radius:var(--radius-sm); font-size:14px; font-weight:800;
+  cursor:pointer; font-family:var(--font); transition:all .15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-top:4px;
+}
+.submitBtn:hover:not(:disabled) { background:var(--brand-2); transform:translateY(-1px); }
+.submitBtn:disabled { opacity:.6; cursor:not-allowed; }
+.spinner {
+  width:16px; height:16px;
+  border:2px solid rgba(255,255,255,.3); border-top:2px solid #fff;
+  border-radius:50%; animation:spin .7s linear infinite; display:inline-block;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.demo {
+  margin-top:16px; padding:11px 14px;
+  background:var(--surface-1); border:1px solid var(--line);
+  border-radius:var(--radius-sm);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.demo p { font-size:12px; color:var(--text-2); }
+.demo button {
+  font-size:12px; font-weight:700; color:var(--brand);
+  background:none; cursor:pointer; font-family:var(--font);
+}
+
+.switchAuth { text-align:center; font-size:13px; color:var(--text-3); margin-top:16px; }
+.switchAuth a { color:var(--brand); font-weight:700; text-decoration:none; }
+
+@media (max-width:860px) {
+  .leftPanel { display:none; }
+  .rightPanel { width:100%; }
+}
