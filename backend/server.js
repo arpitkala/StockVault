@@ -54,7 +54,16 @@ app.use(cors({
   credentials: true
 }));
 
-app.options("*", cors());
+app.options("*", cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 500 }));

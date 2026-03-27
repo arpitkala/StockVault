@@ -5,7 +5,12 @@ const bcrypt = require('bcryptjs');
 console.log("🔥 file started");
 
 // ✅ IMPORT DATA
-const { STOCKS, IPOS, MUTUAL_FUNDS, INDICES } = require('../data/seedData');
+const data = require('../data/seedData.js');
+
+const STOCKS = data.STOCKS;
+const IPOS = data.IPOS;
+const MUTUAL_FUNDS = data.MUTUAL_FUNDS;
+const INDICES = data.INDICES;
 
 // ✅ IMPORT MODELS
 const Stock  = require('../models/Stock');
