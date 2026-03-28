@@ -39,10 +39,8 @@
 ```bash
 stockvault2/
 ├── backend/        # Express server & APIs
-├── frontend/       # React app
-├── screenshots/    # Project images
+├── frontend/       # React app 
 ├── README.md
-└── package.json
 ```
 
 ---
@@ -94,13 +92,7 @@ npm start
 
 ---
 
-## 🚀 Future Enhancements
 
-* 📡 Real-time stock price tracking
-* 📊 Advanced charts (TradingView integration)
-* ⭐ Watchlist feature
-* 🔔 Alerts & notifications
-* 📱 Mobile app version
 
 
 <p align="center">
