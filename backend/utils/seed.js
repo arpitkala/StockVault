@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -24,6 +24,7 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stockvault');
     console.log('✅ MongoDB connected');
+    console.log("MONGO URI:", process.env.MONGODB_URI);
   } catch (err) {
     console.error('❌ DB ERROR:', err);
     process.exit(1);
@@ -123,12 +124,12 @@ const seed = async () => {
   const existingDemo = await User.findOne({ email: demoEmail });
 
   if (!existingDemo) {
-    const hashedPassword = await bcrypt.hash('demo123', 10);
+    // const hashedPassword = await bcrypt.hash('demo123', 10);
 
     await User.create({
       name: 'Demo User',
       email: demoEmail,
-      password: hashedPassword,
+      password: "demo123",
       balance: 100000,
     });
 
