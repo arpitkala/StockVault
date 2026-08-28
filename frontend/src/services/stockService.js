@@ -37,18 +37,25 @@ export const authService = {
 // ─── Stocks ───────────────────────────────────────────────────────────────────
 export const stockService = {
   getAll:      (params)  => api.get('/stocks',          { params }),
+  search:      (q)       => api.get('/stocks/search',   { params: { q } }),
   getBySymbol: (symbol)  => api.get(`/stocks/${symbol}`),
+  getMovers:   ()        => api.get('/stocks/market/movers'),
+  getSectors:  ()        => api.get('/stocks/sectors/list'),
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 export const orderService = {
   place:      (data)   => api.post('/orders', data),
   getHistory: (params) => api.get('/orders',  { params }),
+  getById:    (id)     => api.get(`/orders/${id}`),
+  cancel:     (id)     => api.put(`/orders/${id}/cancel`),
 };
 
 // ─── Portfolio ────────────────────────────────────────────────────────────────
 export const portfolioService = {
-  get: () => api.get('/portfolio'),
+  get:        ()       => api.get('/portfolio'),
+  getSummary: ()       => api.get('/portfolio/summary'),
+  getHolding: (symbol) => api.get(`/portfolio/${symbol}`),
 };
 
 // ─── Watchlist ────────────────────────────────────────────────────────────────
@@ -63,24 +70,37 @@ export const marketService = {
   getIndices:    ()            => api.get('/market/indices'),
   getIndexChart: (sym, params) => api.get(`/market/indices/${sym}/chart`, { params }),
   getMovers:     ()            => api.get('/market/movers'),
+  getStatus:     ()            => api.get('/market/status'),
+  getSectors:    ()            => api.get('/market/sectors'),
 };
 
 // ─── IPO ──────────────────────────────────────────────────────────────────────
 export const ipoService = {
-  getAll:      (params) => api.get('/ipo',            { params }),
-  getBySymbol: (symbol) => api.get(`/ipo/${symbol}`),
-  applyIPO:    (id)     => api.post(`/ipo/apply/${id}`),
+  getAll:              (params) => api.get('/ipo',                   { params }),
+  getStats:            ()       => api.get('/ipo/stats'),
+  getMyApplications:   (params) => api.get('/ipo/my-applications',  { params }),
+  getBySymbol:         (symbol) => api.get(`/ipo/${symbol}`),
+  getSubscription:     (symbol) => api.get(`/ipo/${symbol}/subscription`),
+  getTimeline:         (symbol) => api.get(`/ipo/${symbol}/timeline`),
+  applyIPO:            (id, data) => api.post(`/ipo/apply/${id}`,   data),
+  cancelApplication:   (appId)  => api.delete(`/ipo/cancel/${appId}`),
 };
 
 // ─── SIP / Mutual Funds ───────────────────────────────────────────────────────
 export const sipService = {
-  getFunds:    (params) => api.get('/sip/funds',       { params }),
-  getFundById: (id)     => api.get(`/sip/funds/${id}`),
-  calculate:   (params) => api.get('/sip/calculate',   { params }),
+  getFunds:       (params) => api.get('/sip/funds',       { params }),
+  getFundById:    (id)     => api.get(`/sip/funds/${id}`),
+  calculate:      (params) => api.get('/sip/calculate',   { params }),
+  invest:         (data)   => api.post('/sip/invest',      data),
+  getInvestments: ()       => api.get('/sip/investments'),
+  cancelOrRedeem: (id, act)=> api.post(`/sip/investments/${id}/action`, { action: act }),
 };
 
 // ─── F&O ──────────────────────────────────────────────────────────────────────
 export const fnoService = {
-  getChain:   (symbol, expiry) => api.get('/orders/fno/chain', { params: { symbol, expiry } }),
-  placeOrder: (data)           => api.post('/orders/fno', data),
+  getChain:     (symbol, expiry) => api.get('/fno/chain',     { params: { symbol, expiry } }),
+  placeOrder:   (data)           => api.post('/fno/order',    data),
+  getPositions: (params)         => api.get('/fno/positions', { params }),
+  getExpiries:  ()               => api.get('/fno/expiries'),
+  getLotSizes:  (symbol)         => api.get('/fno/lot-sizes', { params: { symbol } }),
 };

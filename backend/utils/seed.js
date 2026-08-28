@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -18,6 +18,7 @@ const IPO    = require('../models/IPO');
 const Fund   = require('../models/Fund');
 const Index  = require('../models/MarketIndex');
 const User   = require('../models/User');
+const IPOApplication = require('../models/IPOApplication');
 
 // ✅ CONNECT DB (FIXED)
 const connectDB = async () => {
@@ -90,7 +91,34 @@ const seed = async () => {
     process.stdout.write('.');
   }
 
-  // ✅ IPO
+  // ✅ IPO Deduplication & Seeding
+  console.log("\n🧹 deduplicating IPO database records...");
+  try {
+    const allIpos = await IPO.find({});
+    const symbolMap = new Map();
+    for (const ipo of allIpos) {
+      if (symbolMap.has(ipo.symbol)) {
+        const keptIpo = symbolMap.get(ipo.symbol);
+        // Move any applications pointing to this duplicate to the kept one
+        await IPOApplication.updateMany({ ipo: ipo._id }, { ipo: keptIpo._id });
+        // Delete duplicate
+        await IPO.deleteOne({ _id: ipo._id });
+        console.log(`Merged duplicate IPO for ${ipo.company} (${ipo.symbol})`);
+      } else {
+        symbolMap.set(ipo.symbol, ipo);
+      }
+    }
+  } catch (err) {
+    console.error("Deduplication error:", err);
+  }
+
+  // Drop old duplicate index to allow uniqueness constraint
+  try {
+    await IPO.collection.dropIndex('symbol_1');
+  } catch (e) {
+    // safe to ignore
+  }
+
   for (const ipo of IPOS) {
     const exists = await IPO.findOne({ symbol: ipo.symbol });
     if (!exists) {

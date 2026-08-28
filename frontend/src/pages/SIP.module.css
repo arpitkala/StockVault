@@ -121,3 +121,98 @@
 
 @media (max-width:900px) { .calcSection { grid-template-columns:1fr; } }
 @media (max-width:600px) { .fundReturns { display:none; } .fundRating { display:none; } }
+
+/* ── TABS ── */
+.tabRow { display:flex; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:1px; }
+.tab {
+  padding:10px 16px; background:none; border:none;
+  font-size:14px; font-weight:700; color:var(--text-3);
+  cursor:pointer; position:relative; font-family:var(--font);
+}
+.tab:hover { color:var(--text-1); }
+.tabActive { color:var(--brand) !important; }
+.tabActive::after {
+  content:''; position:absolute; bottom:-2px; left:0; right:0; height:3px;
+  background:var(--brand); border-radius:99px;
+}
+
+/* ── INVESTMENTS / HOLDINGS ── */
+.summaryRow { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px; }
+.summaryCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; gap:6px;
+}
+.summaryLabel { font-size:12px; color:var(--text-3); font-weight:600; }
+.summaryVal { font-size:20px; font-weight:800; font-family:var(--mono); color:var(--text-1); }
+
+.holdingsHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.holdingsTitle { font-size:16px; font-weight:700; }
+
+.holdingCard {
+  display:flex; align-items:center; gap:16px;
+  padding:16px; border:1px solid var(--line); background:var(--surface-0);
+  border-radius:var(--radius-lg); margin-bottom:12px;
+}
+.holdingCard:hover { background:var(--surface-1); }
+
+.holdingLeft { flex:1; display:flex; gap:12px; align-items:center; min-width:0; }
+.holdingName { font-size:13px; font-weight:700; margin-bottom:5px; }
+.holdingMeta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--text-3); }
+
+.holdingValue { text-align:right; flex-shrink:0; }
+.holdVal { font-size:14px; font-weight:700; font-family:var(--mono); }
+.holdRet { font-size:11px; font-weight:700; font-family:var(--mono); margin-top:2px; }
+
+.holdingActions { display:flex; gap:8px; flex-shrink:0; margin-left:16px; }
+.stopSipBtn {
+  padding:8px 12px; background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn-border);
+  border-radius:var(--radius-sm); font-size:11px; font-weight:700; cursor:pointer; font-family:var(--font);
+}
+.redeemBtn {
+  padding:8px 12px; background:var(--dn-bg); color:var(--dn-text); border:1px solid var(--dn-border);
+  border-radius:var(--radius-sm); font-size:11px; font-weight:700; cursor:pointer; font-family:var(--font);
+}
+
+/* ── MODAL ── */
+.modalOverlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center; z-index:999;
+}
+.modal {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); width:100%; max-width:440px;
+  box-shadow:var(--shadow-lg); overflow:hidden;
+}
+.modalHead {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 20px; border-bottom:1px solid var(--line);
+}
+.modalTitle { font-size:15px; font-weight:700; color:var(--text-1); }
+.modalClose { background:none; border:none; font-size:16px; color:var(--text-3); cursor:pointer; }
+.modalClose:hover { color:var(--text-1); }
+
+.modalBody { padding:20px; display:flex; flex-direction:column; gap:16px; }
+.mField { display:flex; flex-direction:column; gap:6px; }
+.mLabel { font-size:12px; font-weight:600; color:var(--text-3); }
+.mVal { font-size:14px; font-weight:700; color:var(--text-1); }
+
+.mInputWrap { position:relative; display:flex; align-items:center; }
+.mInputPrefix { position:absolute; left:12px; font-size:14px; color:var(--text-3); font-weight:600; }
+.mInput {
+  width:100%; padding:10px 12px 10px 24px; background:var(--surface-1);
+  border:1px solid var(--line); border-radius:var(--radius-sm);
+  font-size:14px; font-family:var(--mono); font-weight:700; color:var(--text-1);
+}
+.mInput:focus { border-color:var(--brand); outline:none; }
+
+.balRow { display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:2px; }
+.balLabel { color:var(--text-3); }
+.balVal { font-weight:700; color:var(--text-1); }
+
+.mBtn {
+  width:100%; padding:12px; background:var(--brand); color:#fff; border:none;
+  border-radius:var(--radius-sm); font-size:13px; font-weight:700; cursor:pointer;
+  font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.mBtn:disabled { opacity:0.6; cursor:not-allowed; }

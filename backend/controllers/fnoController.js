@@ -148,6 +148,84 @@ const placeFnOOrder = async (req, res) => {
   }
 };
 
+// ── Get F&O Positions ──────────────────────────────────────────────────────
+const getFnOPositions = async (req, res) => {
+  try {
+    const { symbol, status } = req.query;
+    const q = { user: req.user.id, isFnO: true };
+    if (symbol) q.symbol = symbol.toUpperCase();
+    if (status) q.status = status.toUpperCase();
+
+    const positions = await Order.find(q)
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    // Enrich with current stock prices for P&L calculation
+    const symbols = [...new Set(positions.map(p => p.symbol))];
+    const stocks = await Stock.find({ symbol: { $in: symbols } }).select('symbol currentPrice');
+    const priceMap = {};
+    stocks.forEach(s => { priceMap[s.symbol] = s.currentPrice; });
+
+    const enrichedPositions = positions.map(pos => {
+      const currentPrice = priceMap[pos.symbol] || pos.price;
+      const pnl = pos.type.startsWith('BUY')
+        ? parseFloat(((currentPrice - pos.price) * pos.quantity).toFixed(2))
+        : parseFloat(((pos.price - currentPrice) * pos.quantity).toFixed(2));
+      const pnlPercent = pos.price > 0
+        ? parseFloat(((pnl / (pos.price * pos.quantity)) * 100).toFixed(2))
+        : 0;
+
+      return {
+        ...pos.toObject(),
+        currentStockPrice: currentPrice,
+        unrealizedPnL: pnl,
+        unrealizedPnLPercent: pnlPercent,
+      };
+    });
+
+    const totalPnL = enrichedPositions.reduce((sum, p) => sum + p.unrealizedPnL, 0);
+
+    res.json({
+      success: true,
+      count: enrichedPositions.length,
+      totalPnL: parseFloat(totalPnL.toFixed(2)),
+      positions: enrichedPositions,
+    });
+  } catch (e) {
+    console.error('getFnOPositions error:', e);
+    res.status(500).json({ error: e.message });
+  }
+};
+
+// ── Get Available Expiry Dates ─────────────────────────────────────────────
+const getExpiries = async (req, res) => {
+  try {
+    const expiries = generateExpiries();
+    res.json({
+      success: true,
+      expiries,
+      weeklyExpiry: expiries[0],
+      monthlyExpiries: expiries.slice(-3),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+// ── Get Lot Sizes ──────────────────────────────────────────────────────────
+const getLotSizes = async (req, res) => {
+  try {
+    const { symbol } = req.query;
+    if (symbol) {
+      const lotSize = LOT_SIZES[symbol.toUpperCase()] || LOT_SIZES.DEFAULT;
+      return res.json({ success: true, symbol: symbol.toUpperCase(), lotSize });
+    }
+    res.json({ success: true, lotSizes: LOT_SIZES });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function generateExpiries() {
   const expiries = [];
@@ -209,4 +287,4 @@ function N(x) {
   return x >= 0 ? cdf : 1 - cdf;
 }
 
-module.exports = { getOptionsChain, placeFnOOrder };
+module.exports = { getOptionsChain, placeFnOOrder, getFnOPositions, getExpiries, getLotSizes };

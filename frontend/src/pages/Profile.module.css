@@ -269,6 +269,7 @@
   .reportsGrid { grid-template-columns:repeat(2,1fr); }
   .statsRow    { grid-template-columns:repeat(2,1fr); }
   .balTop      { flex-direction:column; align-items:flex-start; }
+  .dematGrid   { grid-template-columns:repeat(2,1fr); }
 }
 @media (max-width:600px) {
   .linksGrid   { grid-template-columns:1fr; }
@@ -277,4 +278,93 @@
   .withdrawBtn, .addBtn { flex:1; text-align:center; }
   .howSteps    { grid-template-columns:repeat(2,1fr); }
   .referralStats { flex-wrap:wrap; }
+  .dematGrid   { grid-template-columns:1fr; }
+}
+
+/* ── DEMAT PROFILE CARD ── */
+.dematCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:24px;
+}
+.dematHeader { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.dematTitle { font-size:15px; font-weight:700; color:var(--text-1); }
+
+.verifiedTag {
+  font-size:11px; font-weight:800; padding:4px 12px;
+  background:var(--up-bg); color:var(--up); border-radius:99px;
+  border:1px solid rgba(0, 179, 134, 0.2);
+}
+.verifyKycBtn {
+  font-size:11px; font-weight:800; padding:6px 14px;
+  background:var(--brand); color:#fff; border-radius:var(--radius-sm);
+  border:none; cursor:pointer; font-family:var(--font); transition:all 0.15s;
+}
+.verifyKycBtn:hover { background:var(--brand-2); }
+
+.dematGrid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+.dematItem { display:flex; flex-direction:column; gap:4px; }
+.dematLabel { font-size:11px; color:var(--text-3); font-weight:600; }
+.dematVal { font-size:13px; font-weight:700; color:var(--text-1); font-family:var(--mono); }
+
+.segmentPills { display:flex; gap:6px; flex-wrap:wrap; }
+.segmentPill {
+  font-size:10px; font-weight:800; padding:2px 8px;
+  background:var(--brand-dim); color:var(--brand); border-radius:var(--radius-pill);
+}
+
+/* ── MARGIN BREAKDOWN ── */
+.balBreakdown { display:flex; gap:36px; flex-wrap:wrap; }
+.balBreakdownItem { display:flex; flex-direction:column; gap:4px; }
+.balBreakdownLabel { font-size:11px; color:var(--text-3); font-weight:600; }
+.balBreakdownVal { font-size:24px; font-weight:800; font-family:var(--mono); color:var(--text-1); }
+
+/* ── VISUAL TWO-COLUMN GRID ── */
+.profileGrid { display:grid; grid-template-columns:1.5fr 1fr; gap:24px; margin-bottom:24px; }
+.leftCol { display:flex; flex-direction:column; gap:0; }
+.rightCol { display:flex; flex-direction:column; gap:0; }
+
+.allocationCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:20px 24px; display:flex; flex-direction:column; gap:16px; height:100%;
+}
+.allocHeader { border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:4px; }
+.allocTitle { font-size:15px; font-weight:700; color:var(--text-1); }
+
+.chartContainer { height:180px; position:relative; display:flex; align-items:center; justify-content:center; }
+.chartCenterLabel { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.chartCenterVal { font-size:16px; font-weight:800; font-family:var(--mono); color:var(--text-1); }
+.chartCenterSub { font-size:10px; color:var(--text-3); font-weight:600; text-transform:uppercase; margin-top:2px; }
+
+.legendList { display:flex; flex-direction:column; gap:10px; }
+.legendItem { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+.legendLeft { display:flex; align-items:center; gap:8px; }
+.legendColor { width:10px; height:10px; border-radius:3px; }
+.legendLabel { color:var(--text-2); font-weight:500; }
+.legendVal { font-family:var(--mono); font-weight:700; color:var(--text-1); }
+
+/* Bank Card styles */
+.bankAccountCard {
+  background:var(--surface-0); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:24px;
+}
+.bankAccountHeader { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:16px; }
+.bankAccountTitle { font-size:15px; font-weight:700; color:var(--text-1); }
+
+.bankDetailRow { display:flex; align-items:center; gap:16px; }
+.bankLogoBox {
+  width:44px; height:44px; border-radius:10px; background:var(--surface-1);
+  display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid var(--line);
+}
+.bankMetaDetails { display:flex; flex-direction:column; gap:4px; flex:1; }
+.bankDetailName { font-size:13px; font-weight:700; color:var(--text-1); }
+.bankDetailSub { font-size:11px; color:var(--text-3); }
+
+.bankPrimaryBadge {
+  font-size:10px; font-weight:800; padding:3px 10px;
+  background:var(--up-bg); color:var(--up); border-radius:var(--radius-pill);
+}
+
+/* Two-column media query rule */
+@media (max-width:990px) {
+  .profileGrid { grid-template-columns:1fr; }
 }

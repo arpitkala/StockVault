@@ -16,7 +16,9 @@ const watchlistRoutes= require('./routes/watchlist');
 const ipoRoutes      = require('./routes/ipo');
 const sipRoutes      = require('./routes/sip');
 const marketRoutes   = require('./routes/market');
-const { updateStockPrices } = require('./services/stockService');
+const fnoRoutes      = require('./routes/fno');
+const walletRoutes   = require('./routes/wallet');
+const { updateStockPrices, updateIndexPrices } = require('./services/stockService');
 
 const app    = express();
 const server = http.createServer(app);
@@ -74,6 +76,8 @@ app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/ipo',       ipoRoutes);
 app.use('/api/sip',       sipRoutes);
 app.use('/api/market',    marketRoutes);
+app.use('/api/fno',       fnoRoutes);
+app.use('/api/wallet',    walletRoutes);
 
 app.get("/", (req, res) => {
   res.send("StockVault API is running successfully");
@@ -82,9 +86,15 @@ app.get('/api/health', (_, res) => res.json({ status:'ok', ts: new Date() }));
 app.use((_, res) => res.status(404).json({ error:'Route not found' }));
 app.use((err, _, res, __) => res.status(err.status||500).json({ error: err.message }));
 
-cron.schedule('*/15 * * * * *', async () => {
+// ── Price update cron (every 30 seconds — real Yahoo Finance data) ────────────
+cron.schedule('*/30 * * * * *', async () => {
   const updated = await updateStockPrices();
   if (updated?.length) broadcast(updated);
+});
+
+// ── Index price update cron (every 60 seconds) ───────────────────────────────
+cron.schedule('*/60 * * * * *', async () => {
+  await updateIndexPrices();
 });
 
 const PORT = process.env.PORT || 5000;

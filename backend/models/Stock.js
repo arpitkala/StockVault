@@ -22,6 +22,7 @@ const s = new mongoose.Schema({
   lotSize:         { type: Number, default: 1 },
   candlestickData: [{ date: String, open: Number, high: Number, low: Number, close: Number, volume: Number }],
   priceHistory:    [{ price: Number, timestamp: Date }],
+  isRealHistory:   { type: Boolean, default: false },
   lastUpdated:     { type: Date, default: Date.now },
 });
 s.index({ symbol: 1 });

@@ -2,13 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/stockService';
+import { authService, ipoService, sipService } from '../services/stockService';
 import api from '../services/stockService';
 import { formatCurrency, getInitials } from '../utils/helpers';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
 import styles from './Profile.module.css';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // ── ADD FUNDS MODAL ──────────────────────────────────────────────────────────
 function AddFundsModal({ balance, onClose, onSuccess }) {
+  const { user } = useAuth();
   const [amount,       setAmount]      = useState('');
   const [method,       setMethod]      = useState('UPI_QR');
   const [upiId,        setUpiId]       = useState('');
@@ -36,35 +41,63 @@ function AddFundsModal({ balance, onClose, onSuccess }) {
     if (!amt || amt < 100) { toast.error('Minimum deposit is ₹100'); return; }
     const rzpKey = process.env.REACT_APP_RAZORPAY_KEY;
     if (!rzpKey) { toast.error('Razorpay key not configured in .env'); return; }
-    toast.loading('Opening Razorpay...', { id: 'rzp' });
-    const loaded = await loadRazorpay();
-    toast.dismiss('rzp');
-    if (!loaded) { toast.error('Could not load Razorpay. Check internet connection.'); return; }
+    toast.loading('Initializing payment...', { id: 'rzp' });
     try {
+      // 1. Create order on the backend securely
+      const { data: orderData } = await api.post('/wallet/razorpay/order', { amount: amt });
+
+      const loaded = await loadRazorpay();
+      toast.dismiss('rzp');
+      if (!loaded) { toast.error('Could not load Razorpay. Check internet connection.'); return; }
+
       const options = {
-        key: rzpKey, amount: amt * 100, currency: 'INR',
-        name: 'StockVault', description: 'Add Trading Funds', image: '',
+        key: rzpKey,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'StockVault',
+        description: 'Add Trading Funds',
+        image: '',
         handler: async (response) => {
           setLoading(true);
           try {
+            // 2. Complete payment and verify on backend
             const { data } = await api.post('/wallet/deposit', {
-              amount: amt, method: 'UPI',
-              upiId: response.razorpay_payment_id,
-              note: `Razorpay: ${response.razorpay_payment_id}`,
+              amount: amt,
+              method: 'RAZORPAY',
+              razorpay_order_id: response.razorpay_order_id || orderData.orderId,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              note: `Razorpay Order: ${response.razorpay_order_id || orderData.orderId}`,
             });
             toast.success(`₹${amt.toLocaleString('en-IN')} added successfully! 🎉`);
-            onSuccess(data.newBalance); onClose();
-          } catch { toast.error('Payment done but failed to credit. Contact support.'); }
-          finally { setLoading(false); }
+            onSuccess(data.newBalance);
+            onClose();
+          } catch (err) {
+            toast.error(err.response?.data?.error || 'Payment done but failed to credit. Contact support.');
+          } finally {
+            setLoading(false);
+          }
         },
-        prefill: { name: '', email: '', contact: '' },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: ''
+        },
         theme: { color: '#00d09c' },
         modal: { ondismiss: () => toast('Payment cancelled', { icon: 'ℹ️' }), escape: true, backdropclose: false },
       };
+
+      if (!orderData.isMock) {
+        options.order_id = orderData.orderId;
+      }
+
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', (response) => toast.error(`Payment failed: ${response.error.description}`));
       rzp.open();
-    } catch (err) { toast.error('Failed to open Razorpay: ' + err.message); }
+    } catch (err) {
+      toast.dismiss('rzp');
+      toast.error('Failed to open Razorpay: ' + (err.response?.data?.error || err.message));
+    }
   };
 
   const handleManualDeposit = async () => {
@@ -380,26 +413,35 @@ function WithdrawModal({ balance, onClose, onSuccess }) {
 function ReferralSection({ user }) {
   const navigate = useNavigate();
   const code = user?.referralCode ?? '------';
+  const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
     navigator.clipboard.writeText(code);
+    setCopied(true);
     toast.success('Referral code copied!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div style={{
-      background: 'var(--surface-0)', border: '1px solid var(--line)',
-      borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 24,
+      background: 'var(--surface-0)',
+      border: '1.5px solid rgba(0, 179, 134, 0.25)',
+      boxShadow: '0 4px 20px rgba(0, 179, 134, 0.05)',
+      borderRadius: 'var(--radius-lg)',
+      overflow: 'hidden',
+      marginBottom: 24,
     }}>
       <div style={{
-        background: 'linear-gradient(135deg,#003d2b 0%,#001a12 100%)',
+        background: 'linear-gradient(135deg, rgba(0, 179, 134, 0.15) 0%, rgba(0, 179, 134, 0.02) 100%)',
         padding: '20px 22px', display: 'flex', justifyContent: 'space-between',
         alignItems: 'center', flexWrap: 'wrap', gap: 12,
       }}>
         <div>
-          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>🎁 Refer & Earn ₹599</div>
-          <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
-            Invite friends · They complete KYC · You earn <strong style={{ color: 'var(--brand)' }}>₹599</strong> per referral
+          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+            🎁 Refer & Earn ₹599
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            Invite friends · They complete KYC · You earn <strong style={{ color: 'var(--brand)' }}>₹599</strong> credited to your balance
           </div>
         </div>
         <button onClick={() => navigate('/referral')} style={{
@@ -407,7 +449,7 @@ function ReferralSection({ user }) {
           border: 'none', borderRadius: 'var(--radius-sm)',
           fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)',
         }}>
-          View Details →
+          View Dashboard →
         </button>
       </div>
       <div style={{
@@ -423,11 +465,14 @@ function ReferralSection({ user }) {
           </div>
         </div>
         <button onClick={copyCode} style={{
-          padding: '10px 18px', background: 'var(--surface-2)',
-          border: '1.5px solid var(--line)', borderRadius: 'var(--radius-sm)',
-          fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)', color: 'var(--text-2)',
+          padding: '10px 18px', background: copied ? 'var(--up-bg)' : 'var(--surface-2)',
+          border: copied ? '1.5px solid var(--up)' : '1.5px solid var(--line)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)',
+          color: copied ? 'var(--up)' : 'var(--text-2)',
+          transition: 'all 0.15s'
         }}>
-          📋 Copy Code
+          {copied ? '✓ Copied' : '📋 Copy Code'}
         </button>
       </div>
     </div>
@@ -436,7 +481,7 @@ function ReferralSection({ user }) {
 
 // ── MAIN PROFILE PAGE ────────────────────────────────────────────────────────
 export default function ProfilePage() {
-  const { user, logout, updateBalance } = useAuth();
+  const { user, logout, updateBalance, fetchMe } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [editing,      setEditing]      = useState(false);
@@ -446,6 +491,12 @@ export default function ProfilePage() {
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [txns,         setTxns]         = useState([]);
   const [loadingTxns,  setLoadingTxns]  = useState(true);
+  const [blockedFunds, setBlockedFunds] = useState(0);
+  const [completingKYC, setCompletingKYC] = useState(false);
+
+  // Portfolio Allocation values
+  const [stockVal, setStockVal] = useState(0);
+  const [mfVal, setMfVal] = useState(0);
 
   const fetchTxns = useCallback(async () => {
     try {
@@ -454,7 +505,53 @@ export default function ProfilePage() {
     } catch {} finally { setLoadingTxns(false); }
   }, []);
 
-  useEffect(() => { fetchTxns(); }, [fetchTxns]);
+  const fetchBlockedFunds = useCallback(async () => {
+    try {
+      const { data } = await ipoService.getMyApplications();
+      const activeApps = data.applications?.filter(a => a.status === 'APPLIED') || [];
+      const sum = activeApps.reduce((acc, a) => acc + (a.amountBlocked || a.amount || 0), 0);
+      setBlockedFunds(sum);
+    } catch {}
+  }, []);
+
+  const fetchPortfolioSummary = useCallback(async () => {
+    try {
+      const { data } = await api.get('/portfolio/summary');
+      if (data.success && data.summary) {
+        setStockVal(data.summary.currentValue || 0);
+      }
+    } catch {}
+  }, []);
+
+  const fetchMfValuation = useCallback(async () => {
+    try {
+      const { data } = await sipService.getInvestments();
+      const active = data.investments?.filter(i => i.status !== 'REDEEMED') || [];
+      const sum = active.reduce((acc, i) => acc + (i.currentValue || i.totalInvested || 0), 0);
+      setMfVal(sum);
+    } catch {}
+  }, []);
+
+  const handleCompleteKYC = async () => {
+    setCompletingKYC(true);
+    const toastId = toast.loading('Verifying Demat details and completing KYC...');
+    try {
+      await authService.completeKYC();
+      toast.success('Demat Account Activated! KYC Verified successfully! 🛡️', { id: toastId });
+      await fetchMe();
+    } catch (e) {
+      toast.error('KYC activation failed. Please try again.', { id: toastId });
+    } finally {
+      setCompletingKYC(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTxns();
+    fetchBlockedFunds();
+    fetchPortfolioSummary();
+    fetchMfValuation();
+  }, [fetchTxns, fetchBlockedFunds, fetchPortfolioSummary, fetchMfValuation]);
 
   useEffect(() => {
     if (location?.state?.openAddFunds) setShowAdd(true);
@@ -476,6 +573,43 @@ export default function ProfilePage() {
 
   const totalDeposited = txns.filter(t => t.type==='DEPOSIT').reduce((s,t) => s+t.amount, 0);
   const totalWithdrawn = txns.filter(t => t.type==='WITHDRAW').reduce((s,t) => s+t.amount, 0);
+
+  const totalNetWorth = (user?.balance || 0) + stockVal + mfVal + blockedFunds;
+
+  const allocationData = {
+    labels: ['Free Cash', 'Stocks', 'Mutual Funds', 'IPO Bids'],
+    datasets: [
+      {
+        data: [
+          Math.max(0, user?.balance || 0),
+          stockVal,
+          mfVal,
+          blockedFunds
+        ],
+        backgroundColor: [
+          '#00b386',
+          '#3498db',
+          '#9b59b6',
+          '#f39c12'
+        ],
+        borderWidth: 0,
+      }
+    ]
+  };
+
+  const allocationOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `  ₹${ctx.raw.toLocaleString('en-IN')}`
+        }
+      }
+    },
+    cutout: '72%',
+  };
 
   return (
     <div className="fade-up">
@@ -504,20 +638,132 @@ export default function ProfilePage() {
         <div className={styles.heroRight}><span>Member since {memberSince}</span></div>
       </div>
 
-      <div className={styles.balanceCard}>
-        <div className={styles.balTop}>
-          <div>
-            <div className={styles.balLabel}>Trading Balance</div>
-            <div className={styles.balAmount}>{formatCurrency(user?.balance)}</div>
+      {/* ── TWO-COLUMN GRID ── */}
+      <div className={styles.profileGrid}>
+        {/* Left Column */}
+        <div className={styles.leftCol}>
+          <div className={styles.balanceCard}>
+            <div className={styles.balTop}>
+              <div className={styles.balBreakdown}>
+                <div className={styles.balBreakdownItem}>
+                  <span className={styles.balBreakdownLabel}>Available Trading Balance</span>
+                  <strong className={styles.balBreakdownVal}>{formatCurrency(user?.balance)}</strong>
+                </div>
+                <div className={styles.balBreakdownItem}>
+                  <span className={styles.balBreakdownLabel}>Blocked Funds (IPO Bids)</span>
+                  <strong className={styles.balBreakdownVal} style={{ color: 'var(--text-3)' }}>
+                    {formatCurrency(blockedFunds)}
+                  </strong>
+                </div>
+                <div className={styles.balBreakdownItem}>
+                  <span className={styles.balBreakdownLabel}>Total Margin Balance</span>
+                  <strong className={styles.balBreakdownVal} style={{ color: 'var(--brand)' }}>
+                    {formatCurrency((user?.balance || 0) + blockedFunds)}
+                  </strong>
+                </div>
+              </div>
+              <div className={styles.balBtns}>
+                <button className={styles.withdrawBtn} onClick={()=>setShowWithdraw(true)}>💸 WITHDRAW FUNDS</button>
+                <button className={styles.addBtn}      onClick={()=>setShowAdd(true)}>➕ ADD FUNDS</button>
+              </div>
+            </div>
+            <div className={styles.balLinks}>
+              <button className={styles.balLink} onClick={()=>navigate('/portfolio')}>VIEW TRADING BALANCE SUMMARY ›</button>
+              <button className={styles.balLink} onClick={()=>navigate('/orders')}>VIEW TRANSACTION SUMMARY ›</button>
+            </div>
           </div>
-          <div className={styles.balBtns}>
-            <button className={styles.withdrawBtn} onClick={()=>setShowWithdraw(true)}>💸 WITHDRAW FUNDS</button>
-            <button className={styles.addBtn}      onClick={()=>setShowAdd(true)}>➕ ADD FUNDS</button>
+
+          {/* ── DP DEMAT PROFILE PANEL ── */}
+          <div className={styles.dematCard}>
+            <div className={styles.dematHeader}>
+              <h3 className={styles.dematTitle}>🛡️ Demat Demographics</h3>
+              {user?.kycCompleted ? (
+                <span className={styles.verifiedTag}>✓ KYC VERIFIED</span>
+              ) : (
+                <button
+                  className={styles.verifyKycBtn}
+                  onClick={handleCompleteKYC}
+                  disabled={completingKYC}
+                >
+                  {completingKYC ? 'Verifying...' : '⚡ COMPLETE KYC INSTANTLY'}
+                </button>
+              )}
+            </div>
+            <div className={styles.dematGrid}>
+              <div className={styles.dematItem}>
+                <span className={styles.dematLabel}>Client ID</span>
+                <strong className={styles.dematVal}>SV{user?._id?.slice(-8).toUpperCase()}</strong>
+              </div>
+              <div className={styles.dematItem}>
+                <span className={styles.dematLabel}>PAN Card</span>
+                <strong className={styles.dematVal}>
+                  {user?.kycCompleted ? 'ABCDE1234F' : 'PENDING KYC Verification'}
+                </strong>
+              </div>
+              <div className={styles.dematItem}>
+                <span className={styles.dematLabel}>DP Account No</span>
+                <strong className={styles.dematVal}>IN302928-10294857</strong>
+              </div>
+              <div className={styles.dematItem}>
+                <span className={styles.dematLabel}>Active Segments</span>
+                <div className={styles.segmentPills}>
+                  <span className={styles.segmentPill}>Equity Cash</span>
+                  <span className={styles.segmentPill}>F&O Derivatives</span>
+                  <span className={styles.segmentPill}>Mutual Funds</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── LINKED BANK ACCOUNT PANEL ── */}
+          <div className={styles.bankAccountCard}>
+            <div className={styles.bankAccountHeader}>
+              <h3 className={styles.bankAccountTitle}>🏦 Primary Linked Bank</h3>
+              <span className={styles.bankPrimaryBadge}>✓ Primary</span>
+            </div>
+            <div className={styles.bankDetailRow}>
+              <div className={styles.bankLogoBox}>🏛️</div>
+              <div className={styles.bankMetaDetails}>
+                <span className={styles.bankDetailName}>AXIS BANK LTD</span>
+                <span className={styles.bankDetailSub}>A/c No: ••••••••0144 • IFSC: UTIB0000021 • Branch: MUMBAI MAIN OFFICE</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className={styles.balLinks}>
-          <button className={styles.balLink} onClick={()=>navigate('/portfolio')}>VIEW TRADING BALANCE SUMMARY ›</button>
-          <button className={styles.balLink} onClick={()=>navigate('/orders')}>VIEW TRANSACTION SUMMARY ›</button>
+
+        {/* Right Column */}
+        <div className={styles.rightCol}>
+          {/* Asset Allocation Chart Card */}
+          <div className={styles.allocationCard}>
+            <div className={styles.allocHeader}>
+              <h3 className={styles.allocTitle}>💼 Asset Allocation Breakdown</h3>
+            </div>
+            <div className={styles.chartContainer}>
+              <div style={{ width: 150, height: 150 }}>
+                <Doughnut data={allocationData} options={allocationOpts} />
+              </div>
+              <div className={styles.chartCenterLabel}>
+                <span className={styles.chartCenterVal}>{formatCurrency(totalNetWorth)}</span>
+                <span className={styles.chartCenterSub}>Net Worth</span>
+              </div>
+            </div>
+            <div className={styles.legendList}>
+              {[
+                { label: 'Free Cash', val: user?.balance || 0, color: '#00b386' },
+                { label: 'Stocks Portfolio', val: stockVal, color: '#3498db' },
+                { label: 'Mutual Funds', val: mfVal, color: '#9b59b6' },
+                { label: 'Blocked in IPOs', val: blockedFunds, color: '#f39c12' }
+              ].map(item => (
+                <div key={item.label} className={styles.legendItem}>
+                  <div className={styles.legendLeft}>
+                    <div className={styles.legendColor} style={{ background: item.color }} />
+                    <span className={styles.legendLabel}>{item.label}</span>
+                  </div>
+                  <strong className={styles.legendVal}>{formatCurrency(item.val)}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

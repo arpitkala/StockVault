@@ -237,7 +237,7 @@ export default function AppLayout() {
 
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''}`}>
-        <div className={styles.logo}>
+        <div className={styles.logo} onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
           <div className={styles.logoMark}>
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <rect width="22" height="22" rx="6" fill="var(--brand)"/>

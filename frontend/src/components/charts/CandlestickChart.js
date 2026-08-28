@@ -176,7 +176,11 @@ export default function CandlestickChart({ data = [], positive = true, height = 
 
     const ro = new ResizeObserver(entries => {
       if (entries[0] && chartRef.current) {
-        chartRef.current.applyOptions({ width: entries[0].contentRect.width });
+        requestAnimationFrame(() => {
+          if (chartRef.current) {
+            chartRef.current.applyOptions({ width: entries[0].contentRect.width });
+          }
+        });
       }
     });
     ro.observe(containerRef.current);

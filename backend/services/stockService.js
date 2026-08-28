@@ -1,7 +1,9 @@
 const axios = require('axios');
 const Stock = require('../models/Stock');
+const MarketIndex = require('../models/MarketIndex');
+const { fetchBatchQuotes, fetchIndexQuote, isMarketOpen } = require('./marketPriceService');
 
-// Popular Indian + US stocks for the app
+// Popular Indian stocks for the app (used for seeding only)
 const STOCK_LIST = [
   { symbol: 'RELIANCE', name: 'Reliance Industries', sector: 'Energy', basePrice: 2450 },
   { symbol: 'TCS', name: 'Tata Consultancy Services', sector: 'IT', basePrice: 3680 },
@@ -30,13 +32,13 @@ const STOCK_LIST = [
   { symbol: 'TECHM', name: 'Tech Mahindra', sector: 'IT', basePrice: 1150 },
 ];
 
-// Simulate realistic price movement (±3% max per update)
+// ── Simulate realistic price movement (fallback when API is down) ─────────────
 const simulatePriceChange = (currentPrice) => {
   const change = (Math.random() - 0.48) * 0.03; // slight upward bias
   return Math.max(1, currentPrice * (1 + change));
 };
 
-// Seed database with initial stock data
+// ── Seed database with initial stock data ─────────────────────────────────────
 const seedStocks = async () => {
   try {
     const count = await Stock.countDocuments();
@@ -84,7 +86,7 @@ const seedStocks = async () => {
   }
 };
 
-// Update stock prices (called by cron job)
+// ── Update stock prices using REAL Yahoo Finance data ─────────────────────────
 const updateStockPrices = async () => {
   try {
     const stocks = await Stock.find({});
@@ -93,23 +95,64 @@ const updateStockPrices = async () => {
       return [];
     }
 
+    const symbols = stocks.map(s => s.symbol);
+    let realQuotes = {};
+    let useRealData = false;
+
+    // Try to fetch real prices from Yahoo Finance
+    try {
+      realQuotes = await fetchBatchQuotes(symbols, 5);
+      const fetchedCount = Object.keys(realQuotes).length;
+      if (fetchedCount > 0) {
+        useRealData = true;
+        console.log(`📊 Fetched real prices for ${fetchedCount}/${symbols.length} stocks`);
+      }
+    } catch (err) {
+      console.warn('⚠️ Yahoo Finance unavailable, using simulation fallback:', err.message);
+    }
+
     const updates = [];
     for (const stock of stocks) {
-      const newPrice = parseFloat(simulatePriceChange(stock.currentPrice).toFixed(2));
+      let newPrice, open, high, low, volume;
+
+      if (useRealData && realQuotes[stock.symbol]) {
+        // ── Use real Yahoo Finance data ──
+        const q = realQuotes[stock.symbol];
+        newPrice = q.currentPrice;
+        open = q.open || stock.open;
+        high = q.high || stock.high;
+        low = q.low || stock.low;
+        volume = q.volume || stock.volume;
+
+        // Update previousClose from real data
+        if (q.previousClose > 0) {
+          stock.previousClose = q.previousClose;
+        }
+      } else {
+        // ── Fallback: simulate price ──
+        newPrice = parseFloat(simulatePriceChange(stock.currentPrice).toFixed(2));
+        open = stock.open;
+        high = Math.max(stock.high || newPrice, newPrice);
+        low = Math.min(stock.low || newPrice, newPrice);
+        volume = stock.volume + Math.floor(Math.random() * 10000);
+      }
+
       const change = parseFloat((newPrice - stock.previousClose).toFixed(2));
       const changePercent = parseFloat(((change / stock.previousClose) * 100).toFixed(2));
 
-      // Maintain rolling 30-point history
+      // Maintain rolling price history
       const history = [...(stock.priceHistory || []), { price: newPrice, timestamp: new Date() }];
       if (history.length > 60) history.splice(0, history.length - 60);
 
       await Stock.findByIdAndUpdate(stock._id, {
         currentPrice: newPrice,
+        previousClose: stock.previousClose,
         change,
         changePercent,
-        high: Math.max(stock.high || newPrice, newPrice),
-        low: Math.min(stock.low || newPrice, newPrice),
-        volume: stock.volume + Math.floor(Math.random() * 10000),
+        open: open || newPrice,
+        high: high || newPrice,
+        low: low || newPrice,
+        volume: volume || 0,
         priceHistory: history,
         lastUpdated: new Date(),
       });
@@ -126,6 +169,41 @@ const updateStockPrices = async () => {
     return updates;
   } catch (error) {
     console.error('updateStockPrices error:', error);
+    return [];
+  }
+};
+
+// ── Update market index prices using real data ────────────────────────────────
+const updateIndexPrices = async () => {
+  try {
+    const indexSymbols = ['NIFTY50', 'SENSEX', 'BANKNIFTY', 'NIFTYMID'];
+    const updates = [];
+
+    for (const sym of indexSymbols) {
+      const realData = await fetchIndexQuote(sym);
+      if (realData && realData.currentValue > 0) {
+        await MarketIndex.findOneAndUpdate(
+          { symbol: sym },
+          {
+            currentValue: realData.currentValue,
+            previousClose: realData.previousClose,
+            change: realData.change,
+            changePercent: realData.changePercent,
+            high: realData.high,
+            low: realData.low,
+            lastUpdated: new Date(),
+          }
+        );
+        updates.push(realData);
+      }
+    }
+
+    if (updates.length > 0) {
+      console.log(`📈 Updated ${updates.length} index prices from Yahoo Finance`);
+    }
+    return updates;
+  } catch (error) {
+    console.error('updateIndexPrices error:', error);
     return [];
   }
 };
@@ -171,4 +249,12 @@ const generateCandlestickData = (basePrice, days = 30) => {
   return data;
 };
 
-module.exports = { seedStocks, updateStockPrices, fetchFromFinnhub, generateCandlestickData, STOCK_LIST };
+module.exports = {
+  seedStocks,
+  updateStockPrices,
+  updateIndexPrices,
+  fetchFromFinnhub,
+  generateCandlestickData,
+  STOCK_LIST,
+  isMarketOpen,
+};

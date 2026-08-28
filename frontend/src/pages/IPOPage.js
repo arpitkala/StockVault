@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { ipoService } from '../services/stockService';
 import { formatCurrency } from '../utils/helpers';
 import styles from './IPO.module.css';
 
-const STATUS_TABS = ['All', 'Open', 'Upcoming', 'Listed'];
+const STATUS_TABS = ['All', 'Open', 'Upcoming', 'Listed', 'My Applications'];
 
 // ── IPO DETAIL MODAL ─────────────────────────────────────────────────────────
 function IPODetailModal({ ipo, onClose, onApply }) {
@@ -133,7 +134,7 @@ function ApplyModal({ ipo, onClose }) {
     if (!bidPrice) { alert('Please enter bid price'); return; }
     setLoading(true);
     try {
-      await ipoService.applyIPO(ipo._id);
+      await ipoService.applyIPO(ipo._id, { lots, bidPrice: Number(bidPrice), upiId, investorType });
       setSuccess(true);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to apply IPO');
@@ -265,22 +266,41 @@ function ApplyModal({ ipo, onClose }) {
 
 // ── MAIN IPO PAGE ─────────────────────────────────────────────────────────────
 export default function IPOPage() {
-  const [ipos,        setIpos]       = useState([]);
-  const [tab,         setTab]        = useState('All');
-  const [loading,     setLoading]    = useState(true);
-  const [detailIPO,   setDetailIPO]  = useState(null);
-  const [applyIPO,    setApplyIPO]   = useState(null);
+  const [ipos,          setIpos]          = useState([]);
+  const [applications,  setApplications]  = useState([]);
+  const [tab,           setTab]           = useState('All');
+  const [loading,       setLoading]       = useState(true);
+  const [detailIPO,     setDetailIPO]     = useState(null);
+  const [applyIPO,      setApplyIPO]      = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchIPOs = async () => {
-      try {
+  const fetchIPOs = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (tab === 'My Applications') {
+        const { data } = await ipoService.getMyApplications();
+        setApplications(data.applications || []);
+      } else {
         const { data } = await ipoService.getAll(tab !== 'All' ? { status: tab } : {});
         setIpos(data.ipos || []);
-      } catch {} finally { setLoading(false); }
-    };
-    fetchIPOs();
+      }
+    } catch {} finally { setLoading(false); }
   }, [tab]);
+
+  useEffect(() => {
+    fetchIPOs();
+  }, [fetchIPOs]);
+
+  const handleCancelApp = async (appId) => {
+    if (!window.confirm('Are you sure you want to cancel this application? The blocked amount will be refunded to your balance.')) return;
+    try {
+      const { data } = await ipoService.cancelApplication(appId);
+      toast.success(data.message || 'Application cancelled successfully.');
+      fetchIPOs();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to cancel application');
+    }
+  };
 
   const renderStars = (n) => (
     <span style={{ color:'var(--warn)', fontSize:13, letterSpacing:-1 }}>
@@ -332,6 +352,71 @@ export default function IPOPage() {
             </div>
           ))}
         </div>
+      ) : tab === 'My Applications' ? (
+        applications.length === 0 ? (
+          <div className={styles.empty}>
+            <span style={{ fontSize:40 }}>📋</span>
+            <p>You have not applied for any IPOs yet.</p>
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {applications.map(app => {
+              const ipo = app.ipo || {};
+              const canCancel = app.status === 'PENDING' && ipo.closeDate && new Date(ipo.closeDate) > new Date();
+
+              return (
+                <div key={app._id} className={styles.ipoCard}>
+                  <div className={styles.cardTop}>
+                    <span className={`${styles.statusBadge} ${
+                      app.status === 'PENDING' ? styles.badgeUpcoming :
+                      app.status === 'CANCELLED' ? styles.badgeListed : styles.badgeOpen
+                    }`}>{app.status}</span>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                      {new Date(app.appliedAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}
+                    </div>
+                  </div>
+
+                  <div className={styles.companyRow}>
+                    <div className={styles.companyIcon}>{app.ipoSymbol?.slice(0,2)}</div>
+                    <div>
+                      <div className={styles.companyName}>{app.ipoCompany}</div>
+                      <div className={styles.sector}>{ipo.sector || 'Mainboard'} · {ipo.exchange || 'NSE'}</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.dataGrid}>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Applied Lots</span>
+                      <span className={styles.dataVal}>{app.lots} lot ({app.totalShares} shares)</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Bid Price</span>
+                      <span className={styles.dataVal}>₹{app.bidPrice}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Amount Blocked</span>
+                      <span className={styles.dataVal} style={{ color: 'var(--brand)' }}>{formatCurrency(app.totalAmount)}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>UPI ID</span>
+                      <span className={styles.dataVal}>{app.upiId || '—'}</span>
+                    </div>
+                  </div>
+
+                  {canCancel && (
+                    <button 
+                      onClick={() => handleCancelApp(app._id)}
+                      className={styles.viewBtn} 
+                      style={{ color: 'var(--dn)', borderColor: 'rgba(231,76,60,0.3)', width: '100%', marginTop: 10 }}
+                    >
+                      Cancel Application
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )
       ) : ipos.length === 0 ? (
         <div className={styles.empty}>
           <span style={{ fontSize:40 }}>📋</span>
@@ -425,7 +510,7 @@ export default function IPOPage() {
                     <button className={styles.notifyBtn} onClick={() => setDetailIPO(ipo)}>
                       🔔 Notify Me
                     </button>
-                 ) : isListed ? (
+                  ) : isListed ? (
                     <button className={styles.viewBtn} onClick={() => setDetailIPO(ipo)}>
                       View Stock
                     </button>

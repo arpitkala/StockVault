@@ -148,12 +148,14 @@ const placeOrder = async (req, res) => {
   }
 };
 
+// ── Get Orders (with pagination) ──────────────────────────────────────────────
 const getOrders = async (req, res) => {
   try {
-    const { symbol, type, page = 1, limit = 20 } = req.query;
+    const { symbol, type, status, page = 1, limit = 20 } = req.query;
     const query = { user: req.user.id };
     if (symbol) query.symbol = symbol.toUpperCase();
     if (type)   query.type   = type.toUpperCase();
+    if (status) query.status = status.toUpperCase();
 
     const total  = await Order.countDocuments(query);
     const orders = await Order.find(query)
@@ -167,4 +169,62 @@ const getOrders = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, getOrders };
+// ── Get single order by ID ────────────────────────────────────────────────────
+const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+    // Get current stock price for P&L
+    const stock = await Stock.findOne({ symbol: order.symbol });
+    const currentPrice = stock ? stock.currentPrice : order.price;
+
+    res.json({
+      success: true,
+      order: {
+        ...order.toObject(),
+        currentStockPrice: currentPrice,
+        unrealizedPnL: order.type === 'BUY'
+          ? parseFloat(((currentPrice - order.price) * order.quantity).toFixed(2))
+          : null,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching order.' });
+  }
+};
+
+// ── Cancel a pending order ────────────────────────────────────────────────────
+const cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+    if (order.status !== 'PENDING') {
+      return res.status(400).json({ error: `Cannot cancel order with status: ${order.status}` });
+    }
+
+    // Refund balance for BUY orders
+    if (order.type === 'BUY') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { balance: order.totalAmount },
+      });
+    }
+
+    order.status = 'CANCELLED';
+    await order.save();
+
+    const user = await User.findById(req.user.id);
+
+    res.json({
+      success: true,
+      message: `Order #${order._id} cancelled successfully.`,
+      newBalance: user.balance,
+    });
+  } catch (error) {
+    console.error('cancelOrder error:', error);
+    res.status(500).json({ error: 'Error cancelling order.' });
+  }
+};
+
+module.exports = { placeOrder, getOrders, getOrderById, cancelOrder };
